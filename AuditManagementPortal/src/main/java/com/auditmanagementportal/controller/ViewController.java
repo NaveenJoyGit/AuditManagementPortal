@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 
+import com.auditmanagementportal.model.AuditDetails;
 import com.auditmanagementportal.model.AuditType;
 import com.auditmanagementportal.model.Project;
 
@@ -48,10 +49,12 @@ public class ViewController {
 	}
 	
 	@RequestMapping(value = "/ProjectExecutionStatus", method = RequestMethod.POST, produces = "application/json")
-	public @ResponseBody Project getSeverity(@RequestBody Project project) {
-		System.out.println(project.getName());
+	public @ResponseBody AuditDetails getSeverity(@RequestBody AuditDetails auditDetails) {
+//		System.out.println(project.getName());
 //		return "severity";
-		return project;
+		System.out.println(auditDetails.getCount());
+		
+		return auditDetails;
 	}
 	
 	

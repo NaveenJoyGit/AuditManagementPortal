@@ -2,8 +2,6 @@ package com.auditmanagementportal.model;
 
 public class AuditDetails {
 
-	private int id;
-
 	private String type;
 
 	private int count;
@@ -26,13 +24,6 @@ public class AuditDetails {
 		super();
 	}
 
-	public int getId() {
-		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
 
 	public String getType() {
 		return type;

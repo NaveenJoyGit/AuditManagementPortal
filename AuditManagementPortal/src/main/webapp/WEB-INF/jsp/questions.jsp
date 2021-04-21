@@ -20,11 +20,15 @@
 </head>
 <body>
 	<section class="container">
+	 <div id="auditType">${audit.getAuditType()}</div> 
 		<c:forEach items="${audit.getQuestions()}" var="ques">
 			<p>${ques.question}</p>
-			<div class="container">
-				<label for="yes">Yes</label> <input type="radio" id="yes"> <label
-					for="no">No</label> <input type="radio" id="no">
+			<div id="questions" class="container">
+				<label for="yes">Yes</label> <input type="radio" id="yes" name="yn${ques.id}"
+					value="yes"> <label for="no">No</label> <input type="radio"
+					id="no${ques.id}" name="yn${ques.id}" value="no">
+					
+				<div>${ques.id}</div>
 			</div>
 		</c:forEach>
 
@@ -66,22 +70,84 @@
 			<h3>JSON Data returned from Server after processing</h3>
 			<div id="processedData"></div>
 		</div>
+
+		Question1 <input type="radio" name="questions1" value="1" />Yes<br />
+		<input type="radio" name="questions1" value="0" />No Question2 <input
+			type="radio" name="questions2" value="1" />Yes<br /> <input
+			type="radio" name="questions2" value="0" />No
+
+		<button onclick="return getCount()">check count</button>
+
+		<div>
+			<p id="count"></p>
+		</div>
+
 	</section>
 
 	<script>
+	
+	
 	jQuery(document).ready(function($) {
+		const obj = {
+  			one: 1,
+			two: 2,
+			three: 3,
+			four: 4,
+			five: 5,
+			six: 6,
+			seven: 7,
+			eight: 8,
+			nine: 9,
+			ten: 10
+		};	
+		
+		
+		var count = 0;
+		$.each(obj, function(key, value) {
+  			$("#no" + value).click(function()
+			{ 
+				/*	if (!$("input[name='yn'+ value]").is(':checked')) {
+					$("#no" + value).attr("checked", "checked");
+					console.log("CHECKED");
+					count++;
+				} */
+				console.log("ALREADY CHECKED");
+				count++;
+				console.log(count); 	
+			});
+		});
+		
+		
+		/* $("#no4").click(function()
+		{ 
+			console.log("clicked");
+    		$('#no').attr("checked", "checked");
+		}); */
  
 		$("#submit").click(function(){
+	   	 	var finalCount = count;
+	   	 	console.log(count);
+	   	 	
+	   	 	var auditType = $('#auditType').text();
+	   	 	console.log(auditType);
+	   	 	
+
 			var project = {};
 			project["name"] = $("#name").val();
 			project["manager"] = $("#manager").val();
 			project["owner"] = $("#owner").val();
 			
+			var audit = {}
+			audit["type"] = auditType;
+			audit["count"] = finalCount
+			audit["date"] = "21/04/2021";
+			audit["project"] = project;
+			
 			$.ajax({
 				type : "POST",
 				contentType : "application/json",
 				url : "/ProjectExecutionStatus",
-				data : JSON.stringify(project),
+				data : JSON.stringify(audit),
 				dataType : 'json',				
 				success : function(data) {
 					$('#processedData').html(JSON.stringify(data));
