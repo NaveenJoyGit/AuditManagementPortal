@@ -30,7 +30,7 @@ class SeverityTest {
 				request, AuditResponse.class);
 		
 		assertNotNull(aresponse);
-		assertEquals("abc", aresponse.getDetail().getProject().getName());
+		assertEquals("Green", aresponse.getStatus());
 	}
 
 }

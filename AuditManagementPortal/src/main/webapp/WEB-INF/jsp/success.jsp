@@ -15,5 +15,7 @@
 <title>AuditManagement WebPortal</title>
 </head>
 <body>
-Hello
+<div>Hello!!</div>
+<div>${status.getStatus()}</div>
+<div>${status.getRem_duration()}</div>
 </body>

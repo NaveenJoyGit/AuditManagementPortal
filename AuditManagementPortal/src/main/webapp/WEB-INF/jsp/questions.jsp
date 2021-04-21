@@ -19,7 +19,7 @@
 <title>AuditManagement WebPortal</title>
 </head>
 <body>
-	<section class="container">
+	<section id="que" class="container">
 	 <div id="auditType">${audit.getAuditType()}</div> 
 		<c:forEach items="${audit.getQuestions()}" var="ques">
 			<p>${ques.question}</p>
@@ -65,6 +65,8 @@
 				<td colspan="2"><input type="button" id="submit" value="Submit" /></td>
 			</tr>
 		</table>
+		
+		
 
 		<div id="displayDiv" style="display: none">
 			<h3>JSON Data returned from Server after processing</h3>
@@ -83,6 +85,9 @@
 		</div>
 
 	</section>
+	
+	<div id="status">
+		</div>
 
 	<script>
 	
@@ -146,12 +151,29 @@
 			$.ajax({
 				type : "POST",
 				contentType : "application/json",
-				url : "/ProjectExecutionStatus",
+				url : "/severityservice",
 				data : JSON.stringify(audit),
 				dataType : 'json',				
 				success : function(data) {
-					$('#processedData').html(JSON.stringify(data));
-					$('#displayDiv').show();
+					console.log(data);
+					let div = document.createElement('div');
+					let status = document.getElementById("status");
+					let que = document.getElementById("que");
+					let p1 = document.createElement('p');
+					p1.textContent = data.status;
+					let p2 = document.createElement('p');
+					p2.textContent = data.status;
+					let p3 = document.createElement('p');
+					p3.textContent = data.status;
+					
+					que.style.display = 'none';
+					
+					div.append(p1);
+					status.append(div);
+					
+					
+					/* $('#processedData').html(JSON.stringify(data));
+					$('#displayDiv').show(); */
 				}
 			});
 		});
