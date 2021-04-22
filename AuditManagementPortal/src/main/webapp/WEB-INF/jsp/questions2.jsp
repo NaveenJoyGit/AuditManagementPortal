@@ -24,7 +24,7 @@
 	Audit Questions
 </div>
 <div class="container pt-5">
-	<form:form action="processForm" modelAttribute="details">
+	<form:form action="/processForm" modelAttribute="details">
 	
 		
 		<form:input style="display: none" path="type" value="${type}"/>

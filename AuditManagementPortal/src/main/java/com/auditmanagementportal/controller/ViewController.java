@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -29,17 +30,46 @@ import com.auditmanagementportal.model.AuditDetails;
 import com.auditmanagementportal.model.AuditResponse;
 import com.auditmanagementportal.model.AuditType;
 import com.auditmanagementportal.model.FormDetails;
+import com.auditmanagementportal.model.JwtResponse;
 import com.auditmanagementportal.model.Project;
 import com.auditmanagementportal.model.Questions;
+import com.auditmanagementportal.model.User;
 
 @Controller
 public class ViewController {
 		
-	RestTemplate rt = new RestTemplate();	
+//	RestTemplate rt = new RestTemplate();	
+//	
+//	ResponseEntity<AuditType> rs = rt.getForEntity("http://localhost:8083/AuditCheckListQuestions/Internal", AuditType.class);
+//	AuditType audiitType = rs.getBody();
 	
-	ResponseEntity<AuditType> rs = rt.getForEntity("http://localhost:8083/AuditCheckListQuestions/Internal", AuditType.class);
-	AuditType audiitType = rs.getBody();
+	@GetMapping("/login")
+	public String loginFormm(Model theModel) {
+		User user = new User();
+		theModel.addAttribute("user",user);
+		return "login";
+	}
+	
+	@PostMapping("/loginValidate")
+	public ResponseEntity<JwtResponse> getUser(@ModelAttribute("user") User user, Model model) {
+		org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		
+		RestTemplate rt = new RestTemplate();
+		HttpEntity<User> request = new HttpEntity<User>(user, headers);
+		
+		JwtResponse jwtToken = rt.postForObject("http://localhost:7001/authenticate",
+				request, JwtResponse.class);
+		
+		return new ResponseEntity<>(jwtToken, HttpStatus.CREATED);
+	}
 
+//	@RequestMapping(value = "/loginValidate", method = RequestMethod.POST)
+//	public String getUsername(/*User user*/) {
+		//restTemplate call to authentication("url/authenticate" ,User user)
+		//response of type jwtResponse
+//	}
+	
 	@RequestMapping(value = "/AuditTypes", method = RequestMethod.GET)
 	public String getAuditTypes(ModelMap model) {
 		model.put("Internal", "Internal");
@@ -59,15 +89,15 @@ public class ViewController {
 		return "questions";
 	}
 	
-	@RequestMapping("/showForm")
-	public String showForm(Model theModel) {
+	@RequestMapping("/showForm/{type}")
+	public String showForm(@PathVariable String type, Model theModel) {
 		
 		// create a student object
-		
+		String url = "http://localhost:8083/AuditCheckListQuestions/" + type;
 		
 		RestTemplate rt = new RestTemplate();	
 		
-		ResponseEntity<AuditType> rs = rt.getForEntity("http://localhost:8083/AuditCheckListQuestions/Internal", AuditType.class);
+		ResponseEntity<AuditType> rs = rt.getForEntity(url, AuditType.class);
 		AuditType auditType = rs.getBody();
 		
 		List<Questions> ques2 = auditType.getQuestions(); 
@@ -78,18 +108,10 @@ public class ViewController {
 		
 		List<String> q = auditType.getQuestions().stream().map(x -> x.getQuestion()).collect(Collectors.toList());
 		
-//		String[] array = (String[]) q.toArray();
 		
 		FormDetails details = new FormDetails();
-//		details.setQuestion(q);
 		
 		int count;
-		
-//		System.out.println(details.getQ1());
-		
-//		for(int i = 0; i < 5; i++) {
-//			if(!details.ge)
-//		}
 		
 		
 		
