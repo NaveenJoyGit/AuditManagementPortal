@@ -20,14 +20,17 @@
 <title>AuditManagement WebPortal</title>
 </head>
 <body>
-	<div class="container">
+	<div class="container mt-5 w-50">
+		<div class="h2">
+			Login
+		</div>
 		<form:form action="/loginValidate" modelAttribute="user">
 			Username
 			<form:input class="form-control" path="userName" />
 			Password
-			<form:input class="form-control" path="password" />
+			<form:input type="password" class="form-control" path="password" />
 			
-			<input type="submit" value="Submit" />
+			<input class="btn btn-success mt-2" type="submit" value="Submit" />
 		</form:form>
 	</div>
 </body>

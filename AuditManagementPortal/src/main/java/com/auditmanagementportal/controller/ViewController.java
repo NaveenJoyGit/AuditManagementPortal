@@ -1,5 +1,6 @@
 package com.auditmanagementportal.controller;
 
+import java.net.http.HttpHeaders;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -35,9 +37,18 @@ import com.auditmanagementportal.model.Project;
 import com.auditmanagementportal.model.Questions;
 import com.auditmanagementportal.model.User;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Controller
+@Slf4j
 public class ViewController {
 		
+	public JwtResponse jwtResponse = new JwtResponse();
+	
+	String jwtToken = "sample";
+	
+	String token = "Bearer " + jwtToken;
+	
 //	RestTemplate rt = new RestTemplate();	
 //	
 //	ResponseEntity<AuditType> rs = rt.getForEntity("http://localhost:8083/AuditCheckListQuestions/Internal", AuditType.class);
@@ -51,53 +62,84 @@ public class ViewController {
 	}
 	
 	@PostMapping("/loginValidate")
-	public ResponseEntity<JwtResponse> getUser(@ModelAttribute("user") User user, Model model) {
+	public String getUser(@ModelAttribute("user") User user, Model model) {
 		org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		
 		RestTemplate rt = new RestTemplate();
 		HttpEntity<User> request = new HttpEntity<User>(user, headers);
 		
-		JwtResponse jwtToken = rt.postForObject("http://localhost:7001/authenticate",
+		jwtResponse = rt.postForObject("http://localhost:7001/authenticate",
 				request, JwtResponse.class);
+		jwtToken = jwtResponse.getAccessToken();
+		log.info(jwtResponse.getAccessToken());
 		
-		return new ResponseEntity<>(jwtToken, HttpStatus.CREATED);
+//		return new ResponseEntity<>(jwtToken, HttpStatus.CREATED);
+		
+		model.addAttribute("Internal", "Internal");
+		model.addAttribute("SOX", "SOX");
+		return "webportal";
+		
 	}
 
-//	@RequestMapping(value = "/loginValidate", method = RequestMethod.POST)
-//	public String getUsername(/*User user*/) {
-		//restTemplate call to authentication("url/authenticate" ,User user)
-		//response of type jwtResponse
+
+	
+//	@RequestMapping(value = "/AuditTypes", method = RequestMethod.GET)
+//	public String getAuditTypes(ModelMap model) {
+//		model.put("Internal", "Internal");
+//		model.put("SOX", "SOX");
+//		return "webportal";
 //	}
 	
-	@RequestMapping(value = "/AuditTypes", method = RequestMethod.GET)
-	public String getAuditTypes(ModelMap model) {
-		model.put("Internal", "Internal");
-		model.put("SOX", "SOX");
-		return "webportal";
-	}
-	
-	@GetMapping("/Questions/{type}")
-	public String getQuestions(@PathVariable String type, ModelMap model) {
-		String url = "http://localhost:8083/AuditCheckListQuestions/" + type;
-		RestTemplate rt = new RestTemplate();	
-		
-		ResponseEntity<AuditType> rs = rt.getForEntity(url, AuditType.class);
-		AuditType audiitType = rs.getBody();
-		
-		model.put("audit", audiitType);
-		return "questions";
-	}
+//	@GetMapping("/Questions/{type}")
+//	public String getQuestions(@PathVariable String type, ModelMap model) {
+//		String url = "http://host.docker.internal:9090/api/AuditCheckList" + type;
+//		String url = "http://localhost:8083/AuditCheckListQuestions/" + type;
+//		org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+//		headers.add("Authorization: ", "Bearer " + jwtToken);	
+//		
+//		HttpEntity<AuditDetails> request = new HttpEntity<>(headers);
+//		
+//		RestTemplate rt = new RestTemplate();	
+//		
+//		ResponseEntity<AuditType> rs = rt.exchange(
+//			    url, HttpMethod.GET, request, AuditType.class);
+//		
+//		model.put("audit", audiitType);
+//		return "questions";
+//	}
 	
 	@RequestMapping("/showForm/{type}")
 	public String showForm(@PathVariable String type, Model theModel) {
+		String url = "http://host.docker.internal:9090/api/AuditCheckList/AuditCheckListQuestions/" + type;
 		
 		// create a student object
-		String url = "http://localhost:8083/AuditCheckListQuestions/" + type;
+//		String url = "http://localhost:8083/AuditCheckListQuestions/" + type;
+//		String jwtToken = jwtResponse.getAccessToken();
+//		
+//		String token = "Bearer " + jwtToken;
+		
+		String token2 = "Bearer " + jwtResponse.getAccessToken();
+		
+		log.info(token);
+		log.info("printing jwtObject");
+		log.info(jwtResponse.getAccessToken());
+		
+		org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+		headers.add("Authorization", token2);	
+		
+		
+		HttpEntity<AuditDetails> request = new HttpEntity<>(headers);
 		
 		RestTemplate rt = new RestTemplate();	
 		
-		ResponseEntity<AuditType> rs = rt.getForEntity(url, AuditType.class);
+		ResponseEntity<AuditType> rs = rt.exchange(
+			    url, HttpMethod.GET, request, AuditType.class);
+		
+		
+//		RestTemplate rt = new RestTemplate();	
+//		
+//		ResponseEntity<AuditType> rs = rt.getForEntity(url, AuditType.class);
 		AuditType auditType = rs.getBody();
 		
 		List<Questions> ques2 = auditType.getQuestions(); 
@@ -138,16 +180,21 @@ public class ViewController {
 		if(details.getQ4().equals("no")) count++;
 		if(details.getQ5().equals("no")) count++;
 		
+		String token2 = "Bearer " + jwtResponse.getAccessToken();
+		
 		Project project = new Project(details.getName(), details.getManager(), details.getOwner());
 		AuditDetails auditDetails = new AuditDetails(details.getType(), count, details.getDate(), project);
 		
 		org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		
+		headers.add("Authorization", token2);
+		
 		RestTemplate rt = new RestTemplate();
 		HttpEntity<AuditDetails> request = new HttpEntity<AuditDetails>(auditDetails, headers);
 		
-		AuditResponse aresponse = rt.postForObject("http://localhost:8082/ProjectExecutionStatus",
+		
+		AuditResponse aresponse = rt.postForObject("http://host.docker.internal:9090/api/AuditSeverity/ProjectExecutionStatus",
 				request, AuditResponse.class);
 		
 		theModel.addAttribute("status", aresponse);

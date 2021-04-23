@@ -20,11 +20,11 @@
 <title>AuditManagement WebPortal</title>
 </head>
 <body>
-<div class="container h2 pt-5">
-	Audit Questions
-</div>
 <div class="container pt-5">
 	<form:form action="/processForm" modelAttribute="details">
+		<div class="container h2 pt-5 pb-3">
+			Project details
+		</div>
 	
 		
 		<form:input style="display: none" path="type" value="${type}"/>
@@ -53,7 +53,9 @@
 		<br>
 		<br>
 
-		Questions:
+		<div class="container h2 pt-5">
+			Audit Questions
+		</div>
 		<br><br>
 		
 		
@@ -63,32 +65,11 @@
 			No<form:radiobutton path="q${ques.getId()}" value="no" /><br><br>
 		</c:forEach>
 		
-		<div>--------------------------------------</div>
-		
-		<!-- {questions.get(0)}
-		Yes<form:radiobutton path="q1" value="yes" />
-		No<form:radiobutton path="q1" value="no" />
-		<br><br>
-		${questions.get(1)}
-		Yes<form:radiobutton path="q2" value="yes" />
-		No<form:radiobutton path="q2" value="no" />
-		<br><br>
-		${questions.get(2)}
-		Yes<form:radiobutton path="q3" value="yes" />
-		No<form:radiobutton path="q3" value="no" />
-		<br><br>
-		${questions.get(3)}
-		Yes<form:radiobutton path="q4" value="yes" />
-		No<form:radiobutton path="q4" value="no" />
-		<br><br>
-		${questions.get(4)}
-		Yes<form:radiobutton path="q5" value="yes" />
-		No<form:radiobutton path="q5" value="no" /> -->
 
 		<br>
 		<br>
 
-		<input type="submit" value="Submit" />
+		<input class="btn btn-info mb-5" type="submit" value="Submit" />
 
 	</form:form>
 </div>

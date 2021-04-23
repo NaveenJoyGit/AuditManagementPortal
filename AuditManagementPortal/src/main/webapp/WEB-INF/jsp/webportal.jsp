@@ -19,7 +19,7 @@
 </head>
 <body style="height: 100vh">
 	<section style="height: 100vh">
-		<div class="container h-100">
+		<div class="container h-100 w-50">
 			<div class="row h-100 align-items-center">
 				<div class="col d-flex justify-content-center">
 					<a class="btn btn-default" href="showForm/${Internal}">
