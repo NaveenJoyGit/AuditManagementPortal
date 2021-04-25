@@ -33,7 +33,6 @@
 			</div>
 		</nav>
 
-
 		 
 		<body style="height: 100vh">
 			<section style="height: 100vh">

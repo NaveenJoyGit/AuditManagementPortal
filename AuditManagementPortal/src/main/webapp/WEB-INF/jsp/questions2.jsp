@@ -20,6 +20,27 @@
 <title>AuditManagement WebPortal</title>
 </head>
 <body>
+
+	<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+		<div class="container pl-5">
+			<div class="container d-flex flex-row">
+				<a class="navbar-brand" href="#">AuditManagement</a>
+			</div>
+			<div class="container d-flex flex-row-reverse">
+				<ul class="navbar-nav mr-auto">
+					<li class="nav-item">
+						<a class="nav-link" href="#">${sessionScope.user.getUserName()}</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="#">logout</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+
+
 <div class="container pt-5">
 	<form:form action="/processForm" modelAttribute="details">
 		<div class="container h2 pt-5 pb-3">

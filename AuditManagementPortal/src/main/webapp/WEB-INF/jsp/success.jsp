@@ -32,27 +32,65 @@
 				<title>AuditManagement WebPortal</title>
 			</head>
 
+			<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+				<div class="container pl-5">
+					<div class="container d-flex flex-row">
+						<a class="navbar-brand" href="#">AuditManagement</a>
+					</div>
+					<div class="container d-flex flex-row-reverse">
+						<ul class="navbar-nav mr-auto">
+							<li class="nav-item">
+								<a class="nav-link" href="#">${sessionScope.user.getUserName()}</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link" href="#">logout</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</nav>
+
+
+
 			<body style="height: 100vh">
-				<div class="container">
-					<div class="row h-33 align-items-center justify-content-center">
-						<c:if test="${status.getStatus() == 'green'}">
-							<div class="col alert-success">${status.getStatus()}</div>
-						</c:if>
-						<c:if test="${status.getStatus() == 'red'}">
-							<div class="container alert-danger">${status.getStatus()}</div>
-						</c:if>
+				<div class="container h-100">
+					<div class="row h-50 align-items-center">
+						<div class="col h-100 d-flex justify-content-center">
+							<c:if test="${status.getStatus() == 'green'}">
+								<div class="container w-50 h-50 alert-success h2 d-flex justify-content-center align-self-center">
+									<p class="align-self-center">${status.getStatus()}</p>
+								</div>
+							</c:if>
+							<c:if test="${status.getStatus() == 'red'}">
+								<div class="container w-50 h-50 alert-danger h2 d-flex justify-content-center align-self-center">
+									<p class="align-self-center">${status.getStatus()}</p>
+								</div>
+							</c:if>
+						</div>
+						
 					</div>
 					<!--  -->
-					<div class="row h-33 align-items-center justify-content-center">
-						<div class="col">${status.getRem_duration()}</div>
+					<div class="row h-25">
+					
+						<c:if test="${status.getStatus() == 'green'}">
+							<div class="col h-100 d-flex justify-content-around">
+								<p class="h3">Remedial duration :</p>
+								<p class="text-success">${status.getRem_duration()}</p>
+							</div>
+						</c:if>
+						<c:if test="${status.getStatus() == 'red'}">
+							<div class="col h-100 d-flex justify-content-around">
+								<p class="h3">Remedial duration :</p>
+								<p class="text-danger h1">${status.getRem_duration()}</p>
+							</div>
+						</c:if>
 					</div>
-					<div class="row h-33 align-items-center justify-content-center">
-						<div class="col">${status.getDetail().getType() }</div>
-					</div>
-					<div class="row h-33 align-items-center justify-content-center">
-						<form:form action="/redirect" method="post">
-							<input class="btn btn-info mb-5" type="submit" value="Home" />
-						</form:form>
+					<div class="row h-33 d-flex align-items-center justify-content-center">
+						<div class="col d-flex h-100 justify-content-around">
+							<form:form class="w-70" action="/redirect" method="post">
+								<input class="btn flex-fill btn-success btn-lg btn-block mb-5" type="submit" value="Home" />
+							</form:form>
+						</div>
 					</div>
 				</div>
 			</body>

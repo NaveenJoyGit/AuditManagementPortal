@@ -88,7 +88,6 @@ public class ViewController {
 	
 	@PostMapping("/loginValidate")
 	public String getUser(@ModelAttribute("user") User user, Model model) {
-		
 		jwtResponse = getJwtResponse(user);
 		
 		jwtToken = jwtResponse.getAccessToken();
