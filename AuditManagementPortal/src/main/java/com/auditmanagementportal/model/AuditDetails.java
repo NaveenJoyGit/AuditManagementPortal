@@ -1,5 +1,10 @@
 package com.auditmanagementportal.model;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
 public class AuditDetails {
 
 	private String type;
@@ -10,6 +15,8 @@ public class AuditDetails {
 	
 	private Project project;
 	
+	private String token;
+	
 
 
 	public AuditDetails(String type, int count, String date, Project project) {
@@ -19,43 +26,5 @@ public class AuditDetails {
 		this.date = date;
 		this.project = project;
 	}
-
-	public AuditDetails() {
-		super();
-	}
-
-
-	public String getType() {
-		return type;
-	}
-
-	public void setType(String type) {
-		this.type = type;
-	}
-
-	public String getDate() {
-		return date;
-	}
-
-	public void setDate(String date) {
-		this.date = date;
-	}
-
-	public Project getProject() {
-		return project;
-	}
-
-	public void setProject(Project project) {
-		this.project = project;
-	}
-
-	public int getCount() {
-		return count;
-	}
-
-	public void setCount(int count) {
-		this.count = count;
-	}
-
 
 }

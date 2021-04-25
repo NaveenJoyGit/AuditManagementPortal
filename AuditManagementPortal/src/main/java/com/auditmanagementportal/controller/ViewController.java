@@ -78,6 +78,7 @@ public class ViewController {
 		
 		model.addAttribute("Internal", "Internal");
 		model.addAttribute("SOX", "SOX");
+		model.addAttribute("username", user.getUserName());
 		return "webportal";
 		
 	}
@@ -129,9 +130,10 @@ public class ViewController {
 		headers.add("Authorization", token2);	
 		
 		
-		HttpEntity<AuditDetails> request = new HttpEntity<>(headers);
+		HttpEntity<String> request = new HttpEntity<>(headers);
 		
 		RestTemplate rt = new RestTemplate();	
+		
 		
 		ResponseEntity<AuditType> rs = rt.exchange(
 			    url, HttpMethod.GET, request, AuditType.class);
@@ -184,6 +186,7 @@ public class ViewController {
 		
 		Project project = new Project(details.getName(), details.getManager(), details.getOwner());
 		AuditDetails auditDetails = new AuditDetails(details.getType(), count, details.getDate(), project);
+		auditDetails.setToken(token2);
 		
 		org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
