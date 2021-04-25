@@ -25,7 +25,6 @@
 		<div class="container h2 pt-5 pb-3">
 			Project details
 		</div>
-	
 		
 		<form:input style="display: none" path="type" value="${type}"/>
 		
