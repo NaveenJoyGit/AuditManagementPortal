@@ -20,10 +20,30 @@
 <title>AuditManagement WebPortal</title>
 </head>
 <body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+			<div class="container pl-5">
+				<div class="container d-flex flex-row">
+					<a class="navbar-brand" href="#">AuditManagement</a>
+				</div>
+				<div class="container d-flex flex-row-reverse">
+					<ul class="navbar-nav mr-auto">
+						<li class="nav-item">
+							<a class="nav-link" href="#">Home</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+
 	<div class="container mt-5 w-50">
 		<div class="h2">
 			Login
 		</div>
+		<div class="alert-danger">
+			${invalid}
+		</div>
+		
 		<form:form action="/loginValidate" modelAttribute="user">
 			Username
 			<form:input class="form-control" path="userName" />

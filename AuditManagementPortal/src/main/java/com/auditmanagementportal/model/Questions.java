@@ -50,6 +50,12 @@ public class Questions {
 		this.question = question;
 	}
 
+	
+	public Questions(Long id, String question) {
+		this.id = id;
+		this.question = question;
+	}
+	
 	public Long getId() {
 		return id;
 	}

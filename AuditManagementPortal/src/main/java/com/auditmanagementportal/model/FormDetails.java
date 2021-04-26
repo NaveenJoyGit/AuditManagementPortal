@@ -1,6 +1,8 @@
 package com.auditmanagementportal.model;
 
-import java.util.List;
+import java.time.LocalDate;
+
+import org.springframework.format.annotation.DateTimeFormat;
 
 import lombok.Data;
 
@@ -10,7 +12,8 @@ public class FormDetails {
 	private String name;
 	private String manager;
 	private String owner;
-	private String date;
+	@DateTimeFormat(pattern="yyyy-MM-dd")
+	private LocalDate date;
 	private String type;
 //	private List<String> question;
 	private String q1;

@@ -1,6 +1,7 @@
 package com.auditmanagementportal.controller;
 
 import java.net.http.HttpHeaders;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -43,6 +45,8 @@ import com.auditmanagementportal.model.JwtResponse;
 import com.auditmanagementportal.model.Project;
 import com.auditmanagementportal.model.Questions;
 import com.auditmanagementportal.model.User;
+import com.auditmanagementportal.service.CheckListService;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,57 +54,101 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @SessionAttributes("user")
 public class ViewController {
-	
+
+	String invalid;
+
 	@Autowired
 	private JwtTokenClient jwtClient;
-	
+
 	public JwtResponse getJwtResponse(User user) {
 		return jwtClient.getJwt(user);
 	}
-	
+
 	@Autowired
 	private CheckListClient checkListClient;
-	
+
 	public AuditType getAuditType(String token, String type) {
 		return checkListClient.getAuditType(token, type);
 	}
-	
+
 	@Autowired
 	private AuditResponseClient auditResponse;
-	
-	
+
 	public AuditResponse getResponse(String token, AuditDetails auditDetails) {
 		return auditResponse.getResponse(token, auditDetails);
 	}
-		
+
+	@Autowired
+	private CheckListService checkListService;
+
 	public JwtResponse jwtResponse = new JwtResponse();
-	
+
 	String jwtToken = "sample";
-	
+
 	String token = "Bearer " + jwtToken;
-	
+
 	@GetMapping("/login")
 	public String loginFormm(Model theModel) {
 		User user = new User();
-		theModel.addAttribute("user",user);
+		theModel.addAttribute("user", user);
+		theModel.addAttribute("invalid", invalid);
 		return "login";
 	}
-	
+
 	@PostMapping("/loginValidate")
 	public String getUser(@ModelAttribute("user") User user, Model model) {
-		jwtResponse = getJwtResponse(user);
-		
-		jwtToken = jwtResponse.getAccessToken();
-		log.info(jwtResponse.getAccessToken());
-				
-		model.addAttribute("Internal", "Internal");
-		model.addAttribute("SOX", "SOX");
-		model.addAttribute("username", user.getUserName());
-		model.addAttribute("user", user);
-		return "webportal";
-		
+		try {
+			jwtResponse = getJwtResponse(user);
+			invalid = null;
+			model.addAttribute("Internal", "Internal");
+			model.addAttribute("SOX", "SOX");
+			model.addAttribute("username", user.getUserName());
+			model.addAttribute("user", user);
+			return "webportal";
+		} catch (Exception e) {
+			invalid = "invalid credentials";
+			model.addAttribute("invalid", invalid);
+			return "redirect:login";
+		}
+
+//		jwtToken = jwtResponse.getAccessToken();
+//		log.info(jwtResponse.getAccessToken());
+//				
+//		model.addAttribute("Internal", "Internal");
+//		model.addAttribute("SOX", "SOX");
+//		model.addAttribute("username", user.getUserName());
+//		model.addAttribute("user", user);
+//		return "webportal";
+
 	}
-	
+
+	public String reliable(String type, Model model) {
+		Questions q1 = new Questions(1l, "q1");
+		Questions q2 = new Questions(2l, "q2");
+		Questions q3 = new Questions(3l, "q3");
+		Questions q4 = new Questions(4l, "q4");
+		Questions q5 = new Questions(5l, "q5");
+
+		List<Questions> qList = new ArrayList<>();
+		qList.add(q1);
+		qList.add(q2);
+		qList.add(q3);
+		qList.add(q4);
+		qList.add(q5);
+		FormDetails details = new FormDetails();
+
+		model.addAttribute("details", details);
+		model.addAttribute("type", type);
+		model.addAttribute("ques2", qList);
+		return "questions2";
+	}
+
+	@GetMapping("/logout")
+	public String logout(HttpSession session) {
+		session.invalidate();
+		return "redirect:login";
+	}
+
 	@PostMapping("/redirect")
 	public String getHomePage(Model model, HttpSession session) {
 		User user = (User) session.getAttribute("user");
@@ -108,63 +156,69 @@ public class ViewController {
 		model.addAttribute("SOX", "SOX");
 //		model.addAttribute("username", user.getUserName());
 		model.addAttribute("user", user);
-		return "webportal";	
+		return "webportal";
 	}
-	
-	
+
 	@RequestMapping("/showForm/{type}")
+	@HystrixCommand(fallbackMethod = "reliable")
 	public String showForm(@PathVariable String type, Model theModel) {
-		
+
 		String token2 = "Bearer " + jwtResponse.getAccessToken();
-		
+		log.info("inside show form controller------------------------------");
 		log.info(token);
 		log.info("printing jwtObject");
 		log.info(jwtResponse.getAccessToken());
 
-		
-		AuditType auditType = getAuditType(token2, type);
-		
-		List<Questions> ques2 = auditType.getQuestions(); 
-		for(Long i = 1l; i <= 5l; i++) {
-			ques2.get((int) (i-1)).setId(i);			
-		}
-		
-		
-		List<String> q = auditType.getQuestions().stream().map(x -> x.getQuestion()).collect(Collectors.toList());
-		
-		
+//		AuditType auditType = getAuditType(token2, type);
+//		
+//		List<Questions> ques2 = auditType.getQuestions(); 
+//		for(Long i = 1l; i <= 5l; i++) {
+//			ques2.get((int) (i-1)).setId(i);			
+//		}
+//		
+//		
+//		List<String> q = auditType.getQuestions().stream().map(x -> x.getQuestion()).collect(Collectors.toList());
+		AuditType auditType = checkListService.getAuditType(token2, type);
+		List<Questions> ques2 = checkListService.getQuestions(token2, type);
+
 		FormDetails details = new FormDetails();
-		
-		
+
 		// add student object to the model
 		theModel.addAttribute("details", details);
-		theModel.addAttribute("questions", q);
+//		theModel.addAttribute("questions", q);
 		theModel.addAttribute("type", auditType.getAuditType());
 		theModel.addAttribute("ques2", ques2);
-		
+
 		return "questions2";
 	}
-	
+
 	@RequestMapping("/processForm")
 	public String processForm(@ModelAttribute("details") FormDetails details, Model theModel) {
-		
+
 		// log the input data
 //		System.out.println("theStudent: " + theStudent.getFirstName()
 //							+ " " + theStudent.getLastName());
-		
+
 		int count = 0;
-		if(details.getQ1().equals("no")) count++;
-		if(details.getQ2().equals("no")) count++;
-		if(details.getQ3().equals("no")) count++;
-		if(details.getQ4().equals("no")) count++;
-		if(details.getQ5().equals("no")) count++;
-		
+		if (details.getQ1().equals("no"))
+			count++;
+		if (details.getQ2().equals("no"))
+			count++;
+		if (details.getQ3().equals("no"))
+			count++;
+		if (details.getQ4().equals("no"))
+			count++;
+		if (details.getQ5().equals("no"))
+			count++;
+
 		String token2 = "Bearer " + jwtResponse.getAccessToken();
-		
+		log.info("--------date inside view-controller-----------");
+		log.info(details.getDate().toString());
+
 		Project project = new Project(details.getName(), details.getManager(), details.getOwner());
 		AuditDetails auditDetails = new AuditDetails(details.getType(), count, details.getDate(), project);
 		auditDetails.setToken(token2);
-		
+
 //		org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
 //		headers.setContentType(MediaType.APPLICATION_JSON);
 //		
@@ -176,42 +230,40 @@ public class ViewController {
 //		
 //		AuditResponse aresponse = rt.postForObject("http://host.docker.internal:9090/api/AuditSeverity/ProjectExecutionStatus",
 //				request, AuditResponse.class);
-		
+
 		AuditResponse aresponse = getResponse(token2, auditDetails);
-		
-		
+
 		theModel.addAttribute("status", aresponse);
 //		System.out.println(count);
-		
+
 		return "success";
 	}
-	
-	
+
 	@RequestMapping(value = "/severityservice", method = RequestMethod.POST, produces = "application/json")
-	public @ResponseBody ResponseEntity<AuditResponse> getSeverity(@RequestBody AuditDetails auditDetails, ModelMap model) {
+	public @ResponseBody ResponseEntity<AuditResponse> getSeverity(@RequestBody AuditDetails auditDetails,
+			ModelMap model) {
 //		System.out.println(project.getName());
 //		return "severity";
 		System.out.println(auditDetails.getCount());
-		
+
 		org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
-		
+
 		RestTemplate rt = new RestTemplate();
 		HttpEntity<AuditDetails> request = new HttpEntity<AuditDetails>(auditDetails, headers);
-		
-		AuditResponse aresponse = rt.postForObject("http://localhost:8082/ProjectExecutionStatus",
-				request, AuditResponse.class);
-		
+
+		AuditResponse aresponse = rt.postForObject("http://localhost:8082/ProjectExecutionStatus", request,
+				AuditResponse.class);
+
 //		model.put("status", aresponse.getStatus());
-		
+
 		return new ResponseEntity<>(aresponse, HttpStatus.CREATED);
 	}
-	
-	
+
 	/*
 	 * RestTemplate Calls
 	 */
-	
+
 //	@PostMapping("/loginValidate")
 //	public String getUser(@ModelAttribute("user") User user, Model model) {
 //		org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
@@ -233,23 +285,23 @@ public class ViewController {
 //		return "webportal";
 //		
 //	}
-	
+
 //	@RequestMapping("/showForm/{type}")
 //	public String showForm(@PathVariable String type, Model theModel) {
 //		String url = "http://host.docker.internal:9090/api/AuditCheckList/AuditCheckListQuestions/" + type;
-		
-		// create a student object
+
+	// create a student object
 //		String url = "http://localhost:8083/AuditCheckListQuestions/" + type;
 //		String jwtToken = jwtResponse.getAccessToken();
 //		
 //		String token = "Bearer " + jwtToken;
-		
+
 //		String token2 = "Bearer " + jwtResponse.getAccessToken();
 //		
 //		log.info(token);
 //		log.info("printing jwtObject");
 //		log.info(jwtResponse.getAccessToken());
-		
+
 //		org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
 //		headers.add("Authorization", token2);	
 //		
@@ -261,15 +313,14 @@ public class ViewController {
 //		
 //		ResponseEntity<AuditType> rs = rt.exchange(
 //			    url, HttpMethod.GET, request, AuditType.class);
-		
-		
+
 //		RestTemplate rt = new RestTemplate();	
 //		
 //		ResponseEntity<AuditType> rs = rt.getForEntity(url, AuditType.class);
 //		AuditType auditType = rs.getBody();
-		
+
 //		AuditType auditType = getAuditType(token2, type);
-		
+
 //		List<Questions> ques2 = auditType.getQuestions(); 
 //		for(Long i = 1l; i <= 5l; i++) {
 //			ques2.get((int) (i-1)).setId(i);			
@@ -282,10 +333,8 @@ public class ViewController {
 //		FormDetails details = new FormDetails();
 //		
 //		int count;
-		
-		
-		
-		// add student object to the model
+
+	// add student object to the model
 //		theModel.addAttribute("details", details);
 //		theModel.addAttribute("questions", q);
 //		theModel.addAttribute("type", auditType.getAuditType());
@@ -294,6 +343,4 @@ public class ViewController {
 //		return "questions2";
 //	}
 
-	
-	
 }

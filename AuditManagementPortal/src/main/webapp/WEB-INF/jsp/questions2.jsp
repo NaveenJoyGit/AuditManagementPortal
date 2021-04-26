@@ -32,7 +32,7 @@
 						<a class="nav-link" href="#">${sessionScope.user.getUserName()}</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link" href="#">logout</a>
+						<a class="nav-link" href="logout">logout</a>
 					</li>
 				</ul>
 			</div>
@@ -64,7 +64,7 @@
 		<br>
 		<br>
 		
-		Date: <form:input class="form-control" path="date" />
+		Date: <form:input type="date" class="form-control" path="date" />
 
 		<br>
 		<br>

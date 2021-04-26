@@ -1,5 +1,10 @@
 package com.auditmanagementportal.model;
 
+import java.time.LocalDate;
+import java.util.Date;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,7 +16,8 @@ public class AuditDetails {
 
 	private int count;
 
-	private String date;
+	@DateTimeFormat(pattern="yyyy-MM-dd")
+	private LocalDate date;
 	
 	private Project project;
 	
@@ -19,7 +25,7 @@ public class AuditDetails {
 	
 
 
-	public AuditDetails(String type, int count, String date, Project project) {
+	public AuditDetails(String type, int count, LocalDate date, Project project) {
 		super();
 		this.type = type;
 		this.count = count;
