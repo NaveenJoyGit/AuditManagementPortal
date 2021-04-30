@@ -66,6 +66,11 @@
 									<p class="align-self-center">${status.getStatus()}</p>
 								</div>
 							</c:if>
+							<c:if test="${status.getStatus() == 'Cannot determine'}">
+								<div class="container w-50 h-50 alert-danger h2 d-flex justify-content-center align-self-center">
+									<p class="align-self-center">${status.getStatus()}</p>
+								</div>
+							</c:if>
 						</div>
 						
 					</div>

@@ -1,38 +1,19 @@
 package com.auditmanagementportal.controller;
 
-import java.net.http.HttpHeaders;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.ui.ModelMap;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
-import org.springframework.web.client.RestTemplate;
 
 import com.auditmanagementportal.cllient.AuditResponseClient;
 import com.auditmanagementportal.cllient.CheckListClient;
@@ -47,6 +28,7 @@ import com.auditmanagementportal.model.Questions;
 import com.auditmanagementportal.model.User;
 import com.auditmanagementportal.service.CheckListService;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -111,14 +93,6 @@ public class ViewController {
 			return "redirect:login";
 		}
 
-//		jwtToken = jwtResponse.getAccessToken();
-//		log.info(jwtResponse.getAccessToken());
-//				
-//		model.addAttribute("Internal", "Internal");
-//		model.addAttribute("SOX", "SOX");
-//		model.addAttribute("username", user.getUserName());
-//		model.addAttribute("user", user);
-//		return "webportal";
 
 	}
 
@@ -154,13 +128,13 @@ public class ViewController {
 		User user = (User) session.getAttribute("user");
 		model.addAttribute("Internal", "Internal");
 		model.addAttribute("SOX", "SOX");
-//		model.addAttribute("username", user.getUserName());
 		model.addAttribute("user", user);
 		return "webportal";
 	}
 
 	@RequestMapping("/showForm/{type}")
-	@HystrixCommand(fallbackMethod = "reliable")
+	@HystrixCommand(fallbackMethod = "reliable", commandProperties = {
+	        @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "80000")})
 	public String showForm(@PathVariable String type, Model theModel) {
 
 		String token2 = "Bearer " + jwtResponse.getAccessToken();
@@ -169,35 +143,30 @@ public class ViewController {
 		log.info("printing jwtObject");
 		log.info(jwtResponse.getAccessToken());
 
-//		AuditType auditType = getAuditType(token2, type);
-//		
-//		List<Questions> ques2 = auditType.getQuestions(); 
-//		for(Long i = 1l; i <= 5l; i++) {
-//			ques2.get((int) (i-1)).setId(i);			
-//		}
-//		
-//		
 //		List<String> q = auditType.getQuestions().stream().map(x -> x.getQuestion()).collect(Collectors.toList());
+		
 		AuditType auditType = checkListService.getAuditType(token2, type);
 		List<Questions> ques2 = checkListService.getQuestions(token2, type);
 
 		FormDetails details = new FormDetails();
 
-		// add student object to the model
 		theModel.addAttribute("details", details);
-//		theModel.addAttribute("questions", q);
 		theModel.addAttribute("type", auditType.getAuditType());
 		theModel.addAttribute("ques2", ques2);
 
 		return "questions2";
 	}
 
+	
 	@RequestMapping("/processForm")
+	@HystrixCommand(fallbackMethod = "statusFallback", commandProperties = {
+	        @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "80000"),
+	        @HystrixProperty(name = "circuitBreaker.requestVolumeThreshold", value = "4"),
+	        @HystrixProperty(name = "circuitBreaker.sleepWindowInMilliseconds", value = "60000"),
+	        @HystrixProperty(name = "metrics.rollingStats.timeInMilliseconds", value = "180000") }, threadPoolProperties = {
+	        @HystrixProperty(name = "coreSize", value = "30"),
+	        @HystrixProperty(name = "metrics.rollingStats.timeInMilliseconds", value = "180000")})
 	public String processForm(@ModelAttribute("details") FormDetails details, Model theModel) {
-
-		// log the input data
-//		System.out.println("theStudent: " + theStudent.getFirstName()
-//							+ " " + theStudent.getLastName());
 
 		int count = 0;
 		if (details.getQ1().equals("no"))
@@ -219,46 +188,20 @@ public class ViewController {
 		AuditDetails auditDetails = new AuditDetails(details.getType(), count, details.getDate(), project);
 		auditDetails.setToken(token2);
 
-//		org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
-//		headers.setContentType(MediaType.APPLICATION_JSON);
-//		
-//		headers.add("Authorization", token2);
-//		
-//		RestTemplate rt = new RestTemplate();
-//		HttpEntity<AuditDetails> request = new HttpEntity<AuditDetails>(auditDetails, headers);
-//		
-//		
-//		AuditResponse aresponse = rt.postForObject("http://host.docker.internal:9090/api/AuditSeverity/ProjectExecutionStatus",
-//				request, AuditResponse.class);
 
 		AuditResponse aresponse = getResponse(token2, auditDetails);
 
 		theModel.addAttribute("status", aresponse);
-//		System.out.println(count);
 
 		return "success";
 	}
-
-	@RequestMapping(value = "/severityservice", method = RequestMethod.POST, produces = "application/json")
-	public @ResponseBody ResponseEntity<AuditResponse> getSeverity(@RequestBody AuditDetails auditDetails,
-			ModelMap model) {
-//		System.out.println(project.getName());
-//		return "severity";
-		System.out.println(auditDetails.getCount());
-
-		org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
-
-		RestTemplate rt = new RestTemplate();
-		HttpEntity<AuditDetails> request = new HttpEntity<AuditDetails>(auditDetails, headers);
-
-		AuditResponse aresponse = rt.postForObject("http://localhost:8082/ProjectExecutionStatus", request,
-				AuditResponse.class);
-
-//		model.put("status", aresponse.getStatus());
-
-		return new ResponseEntity<>(aresponse, HttpStatus.CREATED);
+	
+	public String statusFallback(FormDetails details, Model theModel) {
+		AuditResponse arFallback =  new AuditResponse("Cannot determine", "--", null);
+		theModel.addAttribute("status", arFallback);
+		return "success";
 	}
+
 
 	/*
 	 * RestTemplate Calls

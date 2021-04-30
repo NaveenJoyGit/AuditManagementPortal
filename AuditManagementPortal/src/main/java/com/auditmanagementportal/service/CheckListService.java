@@ -10,7 +10,6 @@ import com.auditmanagementportal.cllient.CheckListClient;
 import com.auditmanagementportal.model.AuditType;
 import com.auditmanagementportal.model.Questions;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,7 +44,7 @@ public class CheckListService {
 //		AuditType auditType = getAuditType(token, type);
 		List<Questions> ques2 = auditType.getQuestions();
 		for (Long i = 1l; i <= 5l; i++) {
-		ques2.get((int) (i - 1)).setId(i);
+			ques2.get((int) (i - 1)).setId(i);
 		}
 		log.info("------------------inside service method-----------------");
 		log.info(ques2.get(0).getQuestion());

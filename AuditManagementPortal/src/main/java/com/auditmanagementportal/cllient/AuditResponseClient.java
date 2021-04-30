@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import com.auditmanagementportal.model.AuditDetails;
 import com.auditmanagementportal.model.AuditResponse;
 
-@FeignClient(url = "http://host.docker.internal:9090/api/AuditSeverity", name = "RESPONSE")
+@FeignClient(url = "http://3.134.88.8:9090/api/AuditSeverity", name = "RESPONSE")
 public interface AuditResponseClient {
 
 	@PostMapping("/ProjectExecutionStatus")
